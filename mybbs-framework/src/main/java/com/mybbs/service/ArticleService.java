@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface ArticleService extends IService<Article> {
     ResponseResult<List> hotArticleList();
+
+    ResponseResult<List> articleList(Integer pageNum, Integer pageSize, Long categoryId);
+
 }
