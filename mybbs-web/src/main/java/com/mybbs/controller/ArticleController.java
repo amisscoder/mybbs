@@ -1,6 +1,7 @@
 package com.mybbs.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mybbs.domain.ResponseResult;
 //import com.mybbs.domain.entity.Article;
 import com.mybbs.service.ArticleService;
@@ -37,5 +38,10 @@ public class ArticleController {
     public ResponseResult ArticlePage(Integer pageNum, Integer pageSize, Long categoryId) {
        ResponseResult<List> articlePage = articleService.articleList(pageNum, pageSize, categoryId);
        return articlePage;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseResult getArticleDetail(@PathVariable("id") Long id) {
+        return articleService.getArticleDetail(id);
     }
 }

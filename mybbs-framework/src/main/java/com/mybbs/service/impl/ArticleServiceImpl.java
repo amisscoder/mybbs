@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mybbs.constants.SystemConstants;
 import com.mybbs.domain.ResponseResult;
 import com.mybbs.domain.entity.Category;
+import com.mybbs.domain.vo.ArticleVo;
 import com.mybbs.domain.vo.HotArticleVo;
 import com.mybbs.domain.vo.ArticlePageVo;
 import com.mybbs.domain.vo.PageVo;
@@ -16,9 +17,12 @@ import org.springframework.stereotype.Service;
 import com.mybbs.mapper.ArticleMapper;
 import com.mybbs.domain.entity.Article;
 import com.mybbs.service.ArticleService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service("ArticleService")
@@ -58,16 +62,37 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                     .orderByDesc(Article::getIsTop);
         Page<Article> page = new Page<>(pageNum, pageSize);
         page(page, queryWrapper);
-        List<Article> articlePage = page.getRecords();
-        //查询categoryName
-        for(Article article: articlePage) {
-
-            Category category = categoryService.getById(article.getCategoryId());
-            article.setCategoryName(category.getName());
-        }
+        List<Article> articlePage = page.getRecords().stream()
+                .map(article -> article.setCategoryName(categoryService.getById(article.getCategoryId()).getName()))
+                .collect(Collectors.toList());
+//        //查询categoryName
+//        for(Article article: articlePage) {
+//
+//            Category category = categoryService.getById(article.getCategoryId());
+//            article.setCategoryName(category.getName());
+//        }
         // 封装结果vo
         List<ArticlePageVo> articleListVos = BeanCopyUtils.copyBeanList(articlePage, ArticlePageVo.class);
         PageVo pageVo = new PageVo(articleListVos, page.getTotal());
         return ResponseResult.okResult(pageVo);
     }
+
+    @Override
+    public ResponseResult getArticleDetail(Long id) {
+//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        //根据id查询文章
+//        Article article = queryWrapper.eq(Article::getId, id);
+        Article article = getById(id);
+        //转换成vo
+        BeanCopyUtils.copyBean(article, ArticleVo.class);
+        //根据分类id查询分类名称
+
+        Category category = categoryService.getById(article.getCategoryId());
+        //判断避免空指针异常
+        if (category != null ) {
+            article.setCategoryName(category.getName());
+        }
+        return ResponseResult.okResult(article);
+    }
+
 }
